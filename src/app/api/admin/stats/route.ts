@@ -13,18 +13,13 @@ export async function GET() {
 
     await connectDB();
 
-    const [totalPending, totalApproved, totalRejected, totalUsers] =
-      await Promise.all([
-        Spammer.countDocuments({ status: "pending" }),
-        Spammer.countDocuments({ status: "approved" }),
-        Spammer.countDocuments({ status: "rejected" }),
-        User.countDocuments(),
-      ]);
+    const [totalReports, totalUsers] = await Promise.all([
+      Spammer.countDocuments(),
+      User.countDocuments(),
+    ]);
 
     return NextResponse.json({
-      totalPending,
-      totalApproved,
-      totalRejected,
+      totalReports,
       totalUsers,
     });
   } catch (error) {

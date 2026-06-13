@@ -32,7 +32,6 @@ interface Spammer {
   screenshots: string[];
   confirmedCount: number;
   confirmedBy: string[];
-  status: string;
   reportedBy: { _id: string; name: string } | null;
   createdAt: string;
 }

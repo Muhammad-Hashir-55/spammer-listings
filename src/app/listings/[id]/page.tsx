@@ -16,8 +16,8 @@ import {
   CheckCircle,
   XCircle,
   ArrowLeft,
-  ImageIcon,
   X,
+  Trash2,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -88,25 +88,6 @@ export default function SpammerDetailPage() {
     }
   };
 
-  const handleStatusChange = async (status: string) => {
-    try {
-      const res = await fetch(`/api/spammers/${params.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
-      });
-
-      if (!res.ok) throw new Error();
-
-      const updated = await res.json();
-      setSpammer(updated);
-      toast.success(
-        `Report ${status === "approved" ? "approved" : "rejected"}!`
-      );
-    } catch {
-      toast.error("Something went wrong");
-    }
-  };
 
   if (loading) {
     return (
@@ -200,17 +181,6 @@ export default function SpammerDetailPage() {
               })}
             </span>
           </div>
-          {spammer.status !== "approved" && (
-            <Badge
-              variant={
-                spammer.status === "pending"
-                  ? "warning"
-                  : "error"
-              }
-            >
-              {spammer.status.charAt(0).toUpperCase() + spammer.status.slice(1)}
-            </Badge>
-          )}
         </div>
 
         {/* Description */}
@@ -273,23 +243,24 @@ export default function SpammerDetailPage() {
           </Button>
 
           {/* Admin actions */}
-          {session?.user?.role === "admin" && spammer.status !== "approved" && (
-            <Button
-              variant="default"
-              className="bg-green-600 hover:bg-green-700 text-white"
-              onClick={() => handleStatusChange("approved")}
-            >
-              <CheckCircle className="mr-2 h-4 w-4" />
-              Approve
-            </Button>
-          )}
-          {session?.user?.role === "admin" && spammer.status !== "rejected" && (
+          {session?.user?.role === "admin" && (
             <Button
               variant="destructive"
-              onClick={() => handleStatusChange("rejected")}
+              onClick={async () => {
+                try {
+                  const res = await fetch(`/api/spammers/${params.id}`, {
+                    method: "DELETE",
+                  });
+                  if (!res.ok) throw new Error();
+                  toast.success("Report deleted!");
+                  router.push("/listings");
+                } catch {
+                  toast.error("Failed to delete");
+                }
+              }}
             >
-              <XCircle className="mr-2 h-4 w-4" />
-              Reject
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete Report
             </Button>
           )}
         </div>

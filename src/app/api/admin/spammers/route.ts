@@ -10,11 +10,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const status = request.nextUrl.searchParams.get("status") || "pending";
-
     await connectDB();
 
-    const spammers = await Spammer.find({ status })
+    const spammers = await Spammer.find()
       .populate("reportedBy", "name")
       .sort({ createdAt: -1 });
 

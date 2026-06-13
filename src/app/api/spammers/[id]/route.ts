@@ -72,31 +72,40 @@ export async function PATCH(
       return NextResponse.json(spammer);
     }
 
-    // Admin status change (approve/reject)
-    if (body.status) {
-      if (session.user.role !== "admin") {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-      }
-
-      const spammer = await Spammer.findByIdAndUpdate(
-        id,
-        { status: body.status },
-        { new: true }
-      ).populate("reportedBy", "name");
-
-      if (!spammer) {
-        return NextResponse.json(
-          { error: "Spammer not found" },
-          { status: 404 }
-        );
-      }
-
-      return NextResponse.json(spammer);
-    }
-
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   } catch (error) {
     console.error("Patch spammer error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await auth();
+    if (session?.user?.role !== "admin") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const { id } = await params;
+    await connectDB();
+
+    const spammer = await Spammer.findByIdAndDelete(id);
+    if (!spammer) {
+      return NextResponse.json(
+        { error: "Spammer not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ message: "Deleted successfully" });
+  } catch (error) {
+    console.error("Delete spammer error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

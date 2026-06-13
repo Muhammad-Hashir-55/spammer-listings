@@ -7,21 +7,16 @@ import toast from "react-hot-toast";
 import {
   Shield,
   Loader2,
-  CheckCircle,
-  XCircle,
-  Clock,
+  Trash2,
   Users,
   Phone,
   Building,
-  Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 interface Stats {
-  totalPending: number;
-  totalApproved: number;
-  totalRejected: number;
+  totalReports: number;
   totalUsers: number;
 }
 
@@ -34,7 +29,7 @@ interface Spammer {
   screenshots: string[];
   confirmedCount: number;
   status: string;
-  reportedBy: { _id: string; name: string } | null;
+  reportedBy: { _id: string; name: string };
   createdAt: string;
 }
 
@@ -42,9 +37,6 @@ export default function AdminPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [stats, setStats] = useState<Stats | null>(null);
-  const [tab, setTab] = useState<"pending" | "approved" | "rejected">(
-    "pending"
-  );
   const [spammers, setSpammers] = useState<Spammer[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -60,14 +52,9 @@ export default function AdminPage() {
   useEffect(() => {
     if (session?.user?.role === "admin") {
       fetchStats();
-    }
-  }, [session]);
-
-  useEffect(() => {
-    if (session?.user?.role === "admin") {
       fetchSpammers();
     }
-  }, [tab, session]);
+  }, [session]);
 
   const fetchStats = async () => {
     try {
@@ -84,7 +71,7 @@ export default function AdminPage() {
   const fetchSpammers = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/spammers?status=${tab}`);
+      const res = await fetch("/api/admin/spammers");
       if (res.ok) {
         const data = await res.json();
         setSpammers(data);
@@ -96,29 +83,16 @@ export default function AdminPage() {
     }
   };
 
-  const handleStatusChange = async (
-    id: string,
-    newStatus: string,
-    index: number
-  ) => {
+  const handleDelete = async (id: string) => {
     try {
       const res = await fetch(`/api/spammers/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
+        method: "DELETE",
       });
 
       if (!res.ok) throw new Error();
 
-      const updated = await res.json();
-      setSpammers((prev) =>
-        prev.map((s) => (s._id === id ? updated : s))
-      );
-
       setSpammers((prev) => prev.filter((s) => s._id !== id));
-      toast.success(
-        `Report ${newStatus === "approved" ? "approved" : "rejected"}!`
-      );
+      toast.success("Report deleted!");
       fetchStats();
     } catch {
       toast.error("Something went wrong");
@@ -145,33 +119,15 @@ export default function AdminPage() {
       </div>
 
       {/* Stats cards */}
-      <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-2">
         <div className="rounded-lg border p-4">
           <div className="flex items-center gap-2">
-            <Clock className="h-5 w-5 text-yellow-600" />
+            <Shield className="h-5 w-5 text-red-600" />
             <span className="text-2xl font-bold">
-              {stats?.totalPending || 0}
+              {stats?.totalReports || 0}
             </span>
           </div>
-          <p className="mt-1 text-sm text-muted-foreground">Pending</p>
-        </div>
-        <div className="rounded-lg border p-4">
-          <div className="flex items-center gap-2">
-            <CheckCircle className="h-5 w-5 text-green-600" />
-            <span className="text-2xl font-bold">
-              {stats?.totalApproved || 0}
-            </span>
-          </div>
-          <p className="mt-1 text-sm text-muted-foreground">Approved</p>
-        </div>
-        <div className="rounded-lg border p-4">
-          <div className="flex items-center gap-2">
-            <XCircle className="h-5 w-5 text-red-600" />
-            <span className="text-2xl font-bold">
-              {stats?.totalRejected || 0}
-            </span>
-          </div>
-          <p className="mt-1 text-sm text-muted-foreground">Rejected</p>
+          <p className="mt-1 text-sm text-muted-foreground">Total Reports</p>
         </div>
         <div className="rounded-lg border p-4">
           <div className="flex items-center gap-2">
@@ -180,27 +136,8 @@ export default function AdminPage() {
               {stats?.totalUsers || 0}
             </span>
           </div>
-          <p className="mt-1 text-sm text-muted-foreground">Users</p>
+          <p className="mt-1 text-sm text-muted-foreground">Total Users</p>
         </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="mb-6 flex gap-2">
-        {(["pending", "approved", "rejected"] as const).map((t) => (
-          <Button
-            key={t}
-            variant={tab === t ? "default" : "outline"}
-            onClick={() => setTab(t)}
-            className="capitalize"
-          >
-            {t}
-            {t === "pending" && stats && stats.totalPending > 0 && (
-              <Badge variant="warning" className="ml-2">
-                {stats.totalPending}
-              </Badge>
-            )}
-          </Button>
-        ))}
       </div>
 
       {/* Listings */}
@@ -212,18 +149,18 @@ export default function AdminPage() {
         <div className="py-20 text-center">
           <Shield className="mx-auto h-12 w-12 text-muted-foreground" />
           <p className="mt-4 text-lg text-muted-foreground">
-            No {tab} reports
+            No reports yet
           </p>
         </div>
       ) : (
         <div className="space-y-4">
-          {spammers.map((spammer, index) => (
+          {spammers.map((spammer) => (
             <div
               key={spammer._id}
               className="rounded-lg border p-4"
             >
               <div className="flex items-start justify-between">
-                <div>
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4 text-muted-foreground" />
                     <span className="font-semibold">{spammer.phone}</span>
@@ -241,9 +178,15 @@ export default function AdminPage() {
                       </Badge>
                     )}
                     <span className="text-xs text-muted-foreground">
-                      Reported by {spammer.reportedBy?.name || "Deleted account"} on{" "}
+                      Reported by {spammer.reportedBy?.name} on{" "}
                       {new Date(spammer.createdAt).toLocaleDateString()}
                     </span>
+                    {spammer.confirmedCount > 0 && (
+                      <Badge variant="default" className="bg-red-600 text-white">
+                        <Shield className="mr-1 h-3 w-3" />
+                        {spammer.confirmedCount} confirmed
+                      </Badge>
+                    )}
                   </div>
                   {spammer.description && (
                     <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
@@ -257,44 +200,15 @@ export default function AdminPage() {
                     </p>
                   )}
                 </div>
-                <Badge
-                  variant={
-                    spammer.status === "pending"
-                      ? "warning"
-                      : spammer.status === "approved"
-                      ? "success"
-                      : "error"
-                  }
-                  className="capitalize"
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => handleDelete(spammer._id)}
                 >
-                  {spammer.status}
-                </Badge>
+                  <Trash2 className="mr-1 h-4 w-4" />
+                  Delete
+                </Button>
               </div>
-
-              {tab === "pending" && (
-                <div className="mt-4 flex gap-2">
-                  <Button
-                    size="sm"
-                    className="bg-green-600 hover:bg-green-700 text-white"
-                    onClick={() =>
-                      handleStatusChange(spammer._id, "approved", index)
-                    }
-                  >
-                    <CheckCircle className="mr-1 h-4 w-4" />
-                    Approve
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() =>
-                      handleStatusChange(spammer._id, "rejected", index)
-                    }
-                  >
-                    <XCircle className="mr-1 h-4 w-4" />
-                    Reject
-                  </Button>
-                </div>
-              )}
             </div>
           ))}
         </div>

@@ -5,7 +5,6 @@ import { Spammer } from "@/lib/models/spammer";
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
     const searchParams = request.nextUrl.searchParams;
     const page = parseInt(searchParams.get("page") || "1");
     const org = searchParams.get("org");
@@ -16,13 +15,7 @@ export async function GET(request: NextRequest) {
 
     await connectDB();
 
-    // Show approved reports + the current user's own pending reports
-    const filter: any = {
-      $or: [
-        { status: "approved" },
-        ...(session?.user?.id ? [{ reportedBy: session.user.id, status: "pending" }] : []),
-      ],
-    };
+    const filter: any = {};
     if (org) {
       filter.organization = org;
     }
