@@ -8,8 +8,8 @@ A community-driven platform where authenticated users can report phone spammers 
 - **Authentication** — Email/password signup and sign-in with bcrypt hashing. "Forgot password?" flow with email reset link via Nodemailer.
 - **Spammer Listings** — Real-time search (debounced 200ms), filter by organization/confirmations/sort, paginated results (10/page). Floating "Report" button.
 - **Report Spammer** — Form with phone (required), name, org, description (500 char limit), Cloudinary image uploads (max 5).
-- **Spammer Detail** — Full info, lightbox gallery for screenshots, "Confirm this Report" toggle (one per user), admin approve/reject buttons.
-- **Admin Dashboard** — Stats cards (pending/approved/rejected/users), tabbed listing by status, approve/reject actions.
+- **Spammer Detail** — Full info, lightbox gallery for screenshots, "Confirm this Report" toggle (one per user), admin delete action.
+- **Admin Dashboard** — Stats cards (total reports/users), all reports with delete capability.
 - **Theme Support** — Light/dark mode toggle (next-themes, system default).
 - **Responsive** — Mobile-first layout with collapsible navigation.
 
@@ -96,6 +96,7 @@ CLOUDINARY_CLOUD_NAME=     # from Cloudinary dashboard
 CLOUDINARY_API_KEY=        # from Cloudinary dashboard
 CLOUDINARY_API_SECRET=     # from Cloudinary dashboard
 NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=  # same as above
+NEXT_PUBLIC_CLOUDINARY_API_KEY=     # same as above
 SMTP_HOST=                 # smtp.gmail.com
 SMTP_PORT=                 # 587
 SMTP_SECURE=               # false
@@ -138,9 +139,9 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | GET | `/api/spammers?page=&org=&minConfirmed=&sort=` | No | Paginated listings |
 | POST | `/api/spammers` | Yes | Create report |
 | GET | `/api/spammers/[id]` | No | Report detail |
-| PATCH | `/api/spammers/[id]` | Yes | Confirm/status change |
+| PATCH | `/api/spammers/[id]` | Yes | Confirm toggle or delete (admin) |
 | GET | `/api/admin/stats` | Admin | Dashboard stats |
-| GET | `/api/admin/spammers?status=` | Admin | Reports by status |
+| GET | `/api/admin/spammers` | Admin | All reports (admin only) |
 
 ## License
 

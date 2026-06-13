@@ -38,7 +38,7 @@ src/
 │   │   ├── page.tsx          # Protected — real-time search, filters, pagination, FAB
 │   │   ├── new/page.tsx      # Report form with Cloudinary upload, char counter
 │   │   └── [id]/page.tsx     # Detail page: confirm toggle, lightbox gallery, admin actions
-│   ├── admin/page.tsx        # Admin dashboard — tabs (pending/approved/rejected), stats
+│   ├── admin/page.tsx        # Admin dashboard — stats + all reports with delete
 │   └── api/
 │       ├── auth/
 │       │   ├── [...nextauth]/  # NextAuth handler
@@ -48,10 +48,10 @@ src/
 │       ├── spammers/
 │       │   ├── route.ts         # GET (paginated with filters) / POST (create)
 │       │   ├── search/route.ts  # GET — real-time search (regex)
-│       │   └── [id]/route.ts    # GET + PATCH (confirm toggle / admin status)
+│       │   └── [id]/route.ts    # GET + PATCH + DELETE (confirm toggle, delete)
 │       └── admin/
 │           ├── stats/route.ts   # GET — dashboard stats (admin only)
-│           └── spammers/route.ts # GET — listing by status (admin only)
+│           └── spammers/route.ts # GET — all reports (admin only)
 ├── components/
 │   ├── navbar.tsx           # Sticky nav with avatar dropdown, theme toggle, mobile menu
 │   ├── theme-provider.tsx   # next-themes provider wrapper
@@ -64,7 +64,7 @@ src/
 │   ├── mail.ts              # Nodemailer transporter + email templates
 │   └── models/
 │       ├── user.ts          # User schema (name, email, phone, password, role)
-│       ├── spammer.ts       # Spammer schema (phone, name, org, screenshots, confirmedBy, status)
+│       ├── spammer.ts       # Spammer schema (phone, name, org, screenshots, confirmedBy)
 │       └── passwordReset.ts # Token schema (email, token, expiresAt, used)
 └── types/
     └── next-auth.d.ts       # Type augmentation for NextAuth session/JWT
@@ -82,7 +82,7 @@ src/
 | `/listings` | Yes | Browse spammers with search & filters |
 | `/listings/new` | Yes | Submit new spammer report |
 | `/listings/[id]` | Yes | Spammer details & confirm/actions |
-| `/admin` | Admin | Manage pending/approved/rejected reports |
+| `/admin` | Admin | View all reports + delete |
 
 ## API Endpoints
 
@@ -91,21 +91,21 @@ src/
 | POST | `/api/auth/signup` | No | Register user |
 | POST | `/api/auth/forgot-password` | No | Request reset email |
 | POST | `/api/auth/reset-password` | No | Reset password |
-| GET | `/api/spammers/search?q=` | No | Live search (approved + user's pending) |
+| GET | `/api/spammers/search?q=` | No | Live search |
 | GET | `/api/spammers?page=&org=&minConfirmed=&sort=` | No | Paginated listings |
-| POST | `/api/spammers` | Yes | Create report (status: pending) |
+| POST | `/api/spammers` | Yes | Create report |
 | GET | `/api/spammers/[id]` | No | Report detail |
-| PATCH | `/api/spammers/[id]` | Yes | Confirm toggle or status change (admin) |
+| PATCH | `/api/spammers/[id]` | Yes | Confirm toggle or delete (admin) |
 | GET | `/api/admin/stats` | Admin | Dashboard stats |
-| GET | `/api/admin/spammers?status=` | Admin | Reports by status |
+| GET | `/api/admin/spammers` | Admin | All reports (admin only) |
 
 ## Database Notes
 
-- New reports default to `status: "pending"` — visible only to the reporter until approved
-- Approved reports visible to everyone
-- `GET /api/spammers` returns approved reports + the current user's own pending ones
+- All reports are immediately visible to everyone (no approval workflow)
+- `GET /api/spammers` returns all reports with pagination and filters
 - `confirmedBy` is a toggle — clicking again removes the confirmation
 - Phone numbers are the primary identifier, but each submission is a separate document
+- Admin can delete any report via the admin dashboard
 
 ## Environment Variables
 
@@ -117,6 +117,7 @@ CLOUDINARY_CLOUD_NAME=   # Cloudinary cloud name
 CLOUDINARY_API_KEY=      # Cloudinary API key
 CLOUDINARY_API_SECRET=   # Cloudinary API secret
 NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=  # Same as above (client-side)
+NEXT_PUBLIC_CLOUDINARY_API_KEY=     # Same as above (client-side)
 SMTP_HOST=               # smtp.gmail.com
 SMTP_PORT=               # 587
 SMTP_SECURE=             # false
