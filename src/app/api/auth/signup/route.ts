@@ -23,10 +23,18 @@ export async function POST(req: Request) {
 
     await connectDB();
 
-    const existing = await User.findOne({ email });
-    if (existing) {
+    const existingEmail = await User.findOne({ email });
+    if (existingEmail) {
       return NextResponse.json(
         { error: "Email already registered" },
+        { status: 400 }
+      );
+    }
+
+    const existingPhone = await User.findOne({ phone });
+    if (existingPhone) {
+      return NextResponse.json(
+        { error: "Phone number already registered" },
         { status: 400 }
       );
     }
