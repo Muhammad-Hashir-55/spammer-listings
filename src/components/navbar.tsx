@@ -70,11 +70,11 @@ export function Navbar() {
 
         {/* Desktop nav */}
         <div className="hidden items-center gap-4 md:flex">
+          <Link href="/listings">
+            <Button variant="ghost">Listings</Button>
+          </Link>
           {session ? (
             <>
-              <Link href="/listings">
-                <Button variant="ghost">Listings</Button>
-              </Link>
               <Link href="/listings/new">
                 <Button variant="ghost">Report Spammer</Button>
               </Link>
@@ -155,13 +155,13 @@ export function Navbar() {
       {mobileOpen && (
         <div className="border-t p-4 md:hidden">
           <div className="flex flex-col gap-3">
+            <Link href="/listings" onClick={() => setMobileOpen(false)}>
+              <Button variant="ghost" className="w-full justify-start">
+                Listings
+              </Button>
+            </Link>
             {session ? (
               <>
-                <Link href="/listings" onClick={() => setMobileOpen(false)}>
-                  <Button variant="ghost" className="w-full justify-start">
-                    Listings
-                  </Button>
-                </Link>
                 <Link
                   href="/listings/new"
                   onClick={() => setMobileOpen(false)}

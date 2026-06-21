@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useDebounce } from "use-debounce";
 import {
@@ -37,9 +35,6 @@ interface Spammer {
 }
 
 export default function ListingsPage() {
-  const { data: session, status } = useSession();
-  const router = useRouter();
-
   const [query, setQuery] = useState("");
   const [debouncedQuery] = useDebounce(query, 200);
   const [searchResults, setSearchResults] = useState<Spammer[]>([]);
@@ -58,12 +53,6 @@ export default function ListingsPage() {
   const [filterOrg, setFilterOrg] = useState("");
   const [filterMinConfirmed, setFilterMinConfirmed] = useState(0);
   const [filterSort, setFilterSort] = useState("newest");
-
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/auth/signin");
-    }
-  }, [status, router]);
 
   // Live search
   useEffect(() => {
@@ -109,16 +98,6 @@ export default function ListingsPage() {
   useEffect(() => {
     fetchListings();
   }, [fetchListings]);
-
-  if (status === "loading") {
-    return (
-      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
-  if (!session) return null;
 
   const hasActiveFilters = filterOrg || filterMinConfirmed > 0;
 

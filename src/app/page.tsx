@@ -57,14 +57,14 @@ export default async function HomePage() {
               a safer communication environment for everyone.
             </p>
             <div className="mt-10 flex items-center justify-center gap-4">
-              <Link href="/auth/signup">
+              <Link href="/listings">
                 <Button size="lg" className="text-base">
-                  Get Started Free
+                  Browse Listings
                 </Button>
               </Link>
-              <Link href="/auth/signin">
+              <Link href="/auth/signup">
                 <Button variant="outline" size="lg" className="text-base">
-                  Sign In
+                  Get Started Free
                 </Button>
               </Link>
             </div>
